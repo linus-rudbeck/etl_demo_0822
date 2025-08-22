@@ -1,5 +1,7 @@
 from datetime import datetime
 import pandas as pd
+import math
+
 
 def extract(source_config):
     df_arr = []
@@ -13,12 +15,39 @@ def extract(source_config):
     
     return df
 
+
+
 def transform(df):
-    # Beräkna:
-    # - Antal beställningar per dag
-    # - Summa (pris) per dag
-    # (Inkludera inte beställningar som avbrutits)
-    pass
+    orders_per_date = {}
+    sum_price_per_date = {}
+    
+    for _, row in df.iterrows():
+        status = row["status"]
+        if status not in ["PAID", "SHIPPED"]:
+            continue
+        
+        created_at = row["createdAt"]
+        created_date = created_at.split("T")[0]
+        
+        if created_date not in orders_per_date:
+            orders_per_date[created_date] = 1
+        else:
+            orders_per_date[created_date] += 1
+                
+        sum_price = 0
+        for item in row["items"]:
+            qty = int(item["qty"])
+            price = float(item["unitPrice"])
+            sum_price += qty * price
+        
+        if created_date not in sum_price_per_date:
+            sum_price_per_date[created_date] = math.floor(sum_price)
+        else:
+            sum_price_per_date[created_date] += math.floor(sum_price)
+    
+    print(orders_per_date, sum_price_per_date)
+
+
 
 def load(df_t, target_config):
     pass
