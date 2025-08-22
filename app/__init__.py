@@ -7,4 +7,6 @@ def run():
             ]
     }
     
-    etl_job(source_config, None)
+    target_config = "orders.csv"
+    
+    etl_job(source_config, target_config)

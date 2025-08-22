@@ -18,8 +18,7 @@ def extract(source_config):
 
 
 def transform(df):
-    orders_per_date = {}
-    sum_price_per_date = {}
+    order_data = {}
     
     for _, row in df.iterrows():
         status = row["status"]
@@ -28,29 +27,28 @@ def transform(df):
         
         created_at = row["createdAt"]
         created_date = created_at.split("T")[0]
-        
-        if created_date not in orders_per_date:
-            orders_per_date[created_date] = 1
-        else:
-            orders_per_date[created_date] += 1
-                
+
         sum_price = 0
         for item in row["items"]:
             qty = int(item["qty"])
             price = float(item["unitPrice"])
             sum_price += qty * price
         
-        if created_date not in sum_price_per_date:
-            sum_price_per_date[created_date] = math.floor(sum_price)
+        if created_date not in order_data:
+            order_data[created_date] = {}
+            order_data[created_date]["order_count"] = 1
+            order_data[created_date]["sum_price"] = math.floor(sum_price)
         else:
-            sum_price_per_date[created_date] += math.floor(sum_price)
+            order_data[created_date]["order_count"] += 1
+            order_data[created_date]["sum_price"] += math.floor(sum_price)
     
-    print(orders_per_date, sum_price_per_date)
+    df_t = pd.DataFrame(order_data)
+    return df_t.T
 
 
 
 def load(df_t, target_config):
-    pass
+    df_t.to_csv(target_config)
 
 
 def etl_job(source_config, target_config):
